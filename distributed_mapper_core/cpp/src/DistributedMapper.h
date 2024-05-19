@@ -38,7 +38,7 @@ class DistributedMapper{
      */
     DistributedMapper(char robotName, bool useChrLessFullGraph = false, bool useFlaggedInit = false){
       // Config
-      verbosity_ = SILENT;
+      verbosity_ = DEBUG;
       robotName_ = robotName;
       rotationNoiseModel_ = gtsam::noiseModel::Isotropic::Variance(9, 1);
       poseNoiseModel_ = gtsam::noiseModel::Isotropic::Variance(12, 1);
