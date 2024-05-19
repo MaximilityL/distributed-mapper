@@ -14,6 +14,10 @@ DistributedMapper::createSubgraphInnerAndSepEdges(const NonlinearFactorGraph& su
   vector<size_t> subgraphsSepEdgesId;
   neighbors_.clear();
 
+  char brokenRobot1 = 'b';  
+  char brokenRobot2 = 'd';
+  bool isEvaluateBrokenRobots = true;
+
   for(size_t k=0; k < subgraph.size(); k++){ // this loops over the factors in subgraphs[i]
     // Continue if factor does not exist
     if(!subgraph.at(k))continue;
@@ -25,21 +29,26 @@ DistributedMapper::createSubgraphInnerAndSepEdges(const NonlinearFactorGraph& su
       subgraphInnerEdge.push_back(subgraph.at(k));
       continue;
     }
+
     Symbol key0 = keys.at(0);
     Symbol key1 = keys.at(1);
+    
+ 
+    char robot0 = symbolChr(key0); // alpha
+    char robot1 = symbolChr(key1); // beta
 
-    char robot0 = symbolChr(key0);
-    char robot1 = symbolChr(key1);
 
     if (robot0 == robot1 || (useLandmarks_ && robot1 == toupper(robot0))){ // keys from the same subgraph
       if(verbosity_ >= DEBUG) cout << "Factor connecting (intra): " << robot0 << " " << symbolIndex(key0) << " " <<  robot1 << " " << symbolIndex(key1) << endl;
       subgraphInnerEdge.push_back(subgraph.at(k)); // the edge is not a separator, but belongs to the interior of the subgraph
     }
-    else{
+    else if (!(robot1 == brokenRobot1 || robot1 == brokenRobot2) || !isEvaluateBrokenRobots)
+     {
       // Add it as a prior factor using the current estimate from the other graph
-      if(verbosity_ >= DEBUG) cout << "Factor connecting (extra): " << robot0 << " " << symbolIndex(key0) << " " <<  robot1 << " " << symbolIndex(key1) << endl;
+      if(verbosity_ >= DEBUG) cout << "Factor connecting (inter): " << robot0 << " " << symbolIndex(key0) << " " <<  robot1 << " " << symbolIndex(key1) << endl;
       subgraphsSepEdgesId.push_back(k); // TODO: allocate this
 
+      
       // Neighbors data structure
       if(robot0 == robotName_ || (useLandmarks_ && robot0 == toupper(robotName_))){
         if(!neighbors_.exists(key1))
@@ -56,6 +65,9 @@ DistributedMapper::createSubgraphInnerAndSepEdges(const NonlinearFactorGraph& su
           neighborChars_.insert(robot0);
       }
     }
+
+
+
   }
 
   // Convert neighbor values into row major vector values
